@@ -27,7 +27,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>ch.fetm.backuptools</groupId>
+    <groupId>org.fetm.backuptools</groupId>
     <artifactId>command</artifactId>
 
 <build>
@@ -46,7 +46,7 @@
 			<configuration>
 				<archive>
 					<manifest>
-						<mainClass>ch.fetm.backuptools.command.Main</mainClass>
+						<mainClass>org.fetm.backuptools.command.Main</mainClass>
 					</manifest>
 				</archive>
 				<descriptorRefs>
@@ -64,7 +64,7 @@
   		<version>4.0</version>
   	</dependency>
   	<dependency>
-  		<groupId>ch.fetm.backupstools</groupId>
+  		<groupId>org.fetm.backupstools</groupId>
   		<artifactId>common</artifactId>
   		<version>0.0.1-SNAPSHOT</version>
   	</dependency>

@@ -1,8 +1,8 @@
-package ch.fetm.backuptools.command;
+package org.fetm.backuptools.command;
 
-import ch.fetm.backuptools.common.BackupAgent;
-import ch.fetm.backuptools.common.datanode.*;
-import ch.fetm.backuptools.common.tools.ScpClient;
+import org.fetm.backuptools.common.BackupAgent;
+import org.fetm.backuptools.common.datanode.*;
+import org.fetm.backuptools.common.tools.ScpClient;
 import org.apache.commons.cli.*;
 
 import java.io.FileInputStream;
