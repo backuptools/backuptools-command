@@ -52,11 +52,8 @@ public class Main {
 
         if(cmd.hasOption("i")){
             String filename = cmd.getOptionValue("i");
-
             Path file = Paths.get(filename);
-            URL URLFile = getClass().getClassLoader().getResource("configuration.properties");
-            InputStream inputStream = URLFile.openStream();
-            Files.copy(inputStream,file);
+            initConfigFile(file);
         }
         else if(cmd.hasOption("h")){
             usage(options);
@@ -64,8 +61,15 @@ public class Main {
             String file = cmd.getOptionValue("f");
             BackupAgent agent = getBackupAgent(file);
             agent.doBackup();
-
+        } else if(cmd.hasOption("d")){
+            String directory = cmd.getOptionValue("d");
         }
+    }
+
+    private void initConfigFile(Path file) throws IOException {
+        URL URLFile = getClass().getClassLoader().getResource("configuration.properties");
+        InputStream inputStream = URLFile.openStream();
+        Files.copy(inputStream, file);
     }
 
     private static BackupAgent getBackupAgent(String file) throws IOException {
