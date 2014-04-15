@@ -7,6 +7,9 @@ import org.apache.commons.cli.*;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Properties;
@@ -30,48 +33,62 @@ import java.util.Properties;
  ******************************************************************************/
 
 public class Main {
-    public static void main(String[] args) throws IOException {
+    public void main(String[] args) throws IOException {
         Options options = new Options();
-        options.addOption("h"    ,false,"Display this help");
-        options.addOption("f"    ,true ,"set configuration file");
+
+        options.addOption("h"    , false,"Display this help");
+        options.addOption("f"    , true ,"set configuration file");
+        options.addOption("i"    , true ,"initialise new file configuration");
         CommandLineParser parser = new BasicParser();
         CommandLine cmd = null;
 
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {
+            System.err.println(e.getMessage());
             usage(options);
+            System.exit(-1);
         }
 
-        if(cmd == null){
-            usage(options);
-        } else if(cmd.hasOption("h")){
+        if(cmd.hasOption("i")){
+            String filename = cmd.getOptionValue("i");
+
+            Path file = Paths.get(filename);
+            URL URLFile = getClass().getClassLoader().getResource("configuration.properties");
+            InputStream inputStream = URLFile.openStream();
+            Files.copy(inputStream,file);
+        }
+        else if(cmd.hasOption("h")){
             usage(options);
         } else if(cmd.hasOption("f")){
             String file = cmd.getOptionValue("f");
-            Path path_file = Paths.get(file);
-            Properties properties = new Properties();
-            properties.load(new FileInputStream(path_file.toFile()));
-            String src_directory  = properties.getProperty("src");
-            String vault_location = properties.getProperty("vault.directory");
-            String vault_type     = properties.getProperty("vault.type");
-            IWORMFileSystem fs = null;
-            if(vault_type.equals("sftp")){
-                String ssh_user       = properties.getProperty("vault.ssh.user");
-                String ssh_host       = properties.getProperty("vault.ssh.host");
-                String ssh_pass       = properties.getProperty("vault.ssh.password");
-
-                ScpClient scp = new ScpClient(ssh_host, ssh_user, ssh_pass);
-                fs = new WORMSftpFileSystem(scp,vault_location);
-            }else if (vault_type.equals(("dir"))){
-                fs = new WORMFileSystem(vault_location);
-            }
-
-            INodeDatabase db = new NodeDirectoryDatabase(fs);
-            BackupAgent agent = new BackupAgent(Paths.get(src_directory), db);
+            BackupAgent agent = getBackupAgent(file);
             agent.doBackup();
 
         }
+    }
+
+    private static BackupAgent getBackupAgent(String file) throws IOException {
+        Path path_file = Paths.get(file);
+        Properties properties = new Properties();
+        properties.load(new FileInputStream(path_file.toFile()));
+        String src_directory  = properties.getProperty("src");
+        String vault_location = properties.getProperty("vault.directory");
+        String vault_type     = properties.getProperty("vault.type");
+        IWORMFileSystem fs = null;
+        if(vault_type.equals("sftp")){
+            String ssh_user       = properties.getProperty("vault.ssh.user");
+            String ssh_host       = properties.getProperty("vault.ssh.host");
+            String ssh_pass       = properties.getProperty("vault.ssh.password");
+
+            ScpClient scp = new ScpClient(ssh_host, ssh_user, ssh_pass);
+            fs = new WORMSftpFileSystem(scp,vault_location);
+        }else if (vault_type.equals(("dir"))){
+            fs = new WORMFileSystem(vault_location);
+        }
+
+        INodeDatabase db = new NodeDirectoryDatabase(fs);
+        return new BackupAgent(Paths.get(src_directory), db);
     }
 
     private static void usage(Options options) {
