@@ -1,6 +1,7 @@
 package org.fetm.backuptools.command;
 
 import org.fetm.backuptools.common.BackupAgent;
+import org.fetm.backuptools.common.BackupAgentFactory;
 import org.fetm.backuptools.common.datanode.*;
 import org.fetm.backuptools.common.tools.ScpClient;
 import org.apache.commons.cli.*;
@@ -71,7 +72,7 @@ public class Main {
             usage(options);
         } else if(cmd.hasOption("f")){
             String file = cmd.getOptionValue("f");
-            BackupAgent agent = getBackupAgent(file);
+            BackupAgent agent = BackupAgentFactory.getBackupAgent(file);
             agent.doBackup();
         } else if(cmd.hasOption("d")){
             String directory = cmd.getOptionValue("d");
@@ -83,32 +84,6 @@ public class Main {
         URL URLFile = getClass().getClassLoader().getResource("configuration.properties");
         InputStream inputStream = URLFile.openStream();
         Files.copy(inputStream, file);
-    }
-
-    private static BackupAgent getBackupAgent(String file) throws IOException {
-        Path path_file = Paths.get(file);
-        Properties properties = new Properties();
-        properties.load(new FileInputStream(path_file.toFile()));
-        String src_directory  = properties.getProperty("src");
-        String vault_location = properties.getProperty("vault.directory");
-        String vault_type     = properties.getProperty("vault.type");
-        IWORMFileSystem fs = null;
-        if(vault_type.equals("sftp")){
-            String ssh_user       = properties.getProperty("vault.ssh.user");
-            String ssh_host       = properties.getProperty("vault.ssh.host");
-            String ssh_pass       = properties.getProperty("vault.ssh.password");
-
-            ScpClient scp = new ScpClient(ssh_host, ssh_user, ssh_pass);
-            fs = new WORMSftpFileSystem(scp,vault_location);
-        }else if (vault_type.equals(("dir"))){
-            fs = new WORMFileSystem(vault_location);
-        }else{
-            System.err.println("Vault type not know !!");
-            System.exit(-1);
-        }
-
-        INodeDatabase db = new NodeDirectoryDatabase(fs);
-        return new BackupAgent(Paths.get(src_directory), db);
     }
 
     private void usage(Options options) {
