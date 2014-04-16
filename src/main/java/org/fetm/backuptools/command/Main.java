@@ -33,22 +33,34 @@ import java.util.Properties;
  ******************************************************************************/
 
 public class Main {
-    public void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException {
+        Main main = new Main();
+        main.execute(args);
+        System.exit(0);
+    }
+
+    private void execute(String[] args) throws IOException  {
+
         Options options = new Options();
 
         options.addOption("h"    , false,"Display this help");
         options.addOption("f"    , true ,"set configuration file");
         options.addOption("i"    , true ,"initialise new file configuration");
+
         CommandLineParser parser = new BasicParser();
         CommandLine cmd = null;
 
         try {
             cmd = parser.parse(options, args);
-        } catch (ParseException e) {
+            if(cmd.getOptions().length==0){
+                throw new Exception("Require option!");
+            }
+        } catch (Exception e) {
             System.err.println(e.getMessage());
             usage(options);
             System.exit(-1);
         }
+
 
         if(cmd.hasOption("i")){
             String filename = cmd.getOptionValue("i");
@@ -64,6 +76,7 @@ public class Main {
         } else if(cmd.hasOption("d")){
             String directory = cmd.getOptionValue("d");
         }
+
     }
 
     private void initConfigFile(Path file) throws IOException {
@@ -89,13 +102,16 @@ public class Main {
             fs = new WORMSftpFileSystem(scp,vault_location);
         }else if (vault_type.equals(("dir"))){
             fs = new WORMFileSystem(vault_location);
+        }else{
+            System.err.println("Vault type not know !!");
+            System.exit(-1);
         }
 
         INodeDatabase db = new NodeDirectoryDatabase(fs);
         return new BackupAgent(Paths.get(src_directory), db);
     }
 
-    private static void usage(Options options) {
+    private void usage(Options options) {
         HelpFormatter hp = new HelpFormatter();
         hp.printHelp("backuptools",options);
     }
