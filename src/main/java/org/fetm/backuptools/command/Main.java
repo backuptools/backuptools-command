@@ -75,12 +75,12 @@ public class Main {
             usage(options);
         } else if (cmd.hasOption(OPT_FILE)) {
             String file = cmd.getOptionValue(OPT_FILE);
-            agents.add(BackupAgentFactory.getBackupAgent(file));
+            agents.add(BackupAgentFactory.buildBackupAgent(file));
         } else if (cmd.hasOption(OPT_DIRECTORY)) {
             String directory = cmd.getOptionValue(OPT_DIRECTORY);
             Path path = Paths.get(directory);
             if(path.toFile().isDirectory()){
-                agents.addAll(BackupAgentFactory.getBackupAgents(path));
+                agents.addAll(BackupAgentFactory.buildBackupAgents(path));
             }
         }
 
